@@ -73,6 +73,11 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ -n "$ISSUE_NUM" && -n "$PR_NUM" ]]; then
+  echo "Error: Provide either --issue or --pr, not both." >&2
+  usage
+fi
+
 if ! command -v gh >/dev/null 2>&1; then
   echo "Error: 'gh' (GitHub CLI) is not installed or not in PATH." >&2
   exit 1
@@ -81,16 +86,19 @@ fi
 # 1. If PR number not explicitly provided, discover PR by issue number or jules branches
 if [[ -z "$PR_NUM" ]]; then
   if [[ -n "$ISSUE_NUM" ]]; then
-    # Match PRs whose title/body explicitly references #<ISSUE_NUM> or issue-<ISSUE_NUM>,
+    # Match PRs whose title/body references #<ISSUE_NUM>, repo#<ISSUE_NUM>, or issue(s)/<ISSUE_NUM>,
     # or whose branch name (headRefName) contains <ISSUE_NUM> as a distinct number token.
-    PR_NUM=$(gh pr list "${REPO_ARGS[@]}" --state all --json number,title,body,headRefName \
-      -q "[.[] | select(
-        ((.title + \" \" + (.body // \"\")) | test(\"(?i)(^|[^0-9a-z])(#|issue[-_ /]#?)${ISSUE_NUM}([^0-9]|$)\"))
+    # Prioritize OPEN PRs over closed/merged attempts.
+    PR_NUM="$(gh pr list "${REPO_ARGS[@]}" --state all --json number,state,title,body,headRefName \
+      -q "([.[] | select(
+        ((.title + \" \" + (.body // \"\")) | test(\"(?i)(#|(^|[^0-9a-z])issues?[-_ /]#?)${ISSUE_NUM}([^0-9]|$)\"))
         or (.headRefName | test(\"(^|[^0-9])${ISSUE_NUM}([^0-9]|$)\"))
-      )][0].number" 2>/dev/null || true)
+      )] | sort_by(if .state == \"OPEN\" then 0 else 1 end, -.number))[0].number // empty")"
   else
-    # When no issue number is specified, fall back to latest PR from a jules branch
-    PR_NUM=$(gh pr list "${REPO_ARGS[@]}" --state all --search "head:jules" --json number -q '.[0].number' 2>/dev/null || true)
+    # When no issue number is specified, fall back to latest PR from a jules branch prefix,
+    # prioritizing OPEN PRs over closed/merged attempts.
+    PR_NUM="$(gh pr list "${REPO_ARGS[@]}" --state all --json number,state,headRefName \
+      -q '([.[] | select(.headRefName | test("(?i)^jules([/-]|$)"))] | sort_by(if .state == "OPEN" then 0 else 1 end, -.number))[0].number // empty')"
   fi
 fi
 
