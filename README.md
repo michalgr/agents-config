@@ -19,9 +19,6 @@ agents-config/
 └── skills/                        # Harness-agnostic agent skills
     └── jules/                     # Workflow for delegating tasks to Google's Jules agent
         ├── SKILL.md
-        ├── references/
-        │   └── issue_template.md
-        └── scripts/
-            ├── check_jules_pr.sh
-            └── create_jules_issue.sh
+        └── references/
+            └── issue_template.md
 ```

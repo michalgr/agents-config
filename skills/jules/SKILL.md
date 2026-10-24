@@ -10,14 +10,14 @@ description: >-
 This skill guides the agent through delegating development tasks to **Jules**, Google's asynchronous AI coding agent that runs in cloud virtual machines directly on GitHub repositories.
 
 > [!NOTE]
-> All relative paths in this skill (`./references/...`, `./scripts/...`) are relative to the directory containing this `SKILL.md` file (`<skill-dir>`).
+> All relative paths in this skill (`./references/...`) are relative to the directory containing this `SKILL.md` file (`<skill-dir>`).
 
 Delegation follows a 6-step lifecycle:
 1. **Local Research & Git Sanity**: Rapid local analysis without modifying source code.
 2. **Brainstorming & User Alignment**: Discussing details and trade-offs with the user (unless trivial).
 3. **Plan Artifact Formulation**: Drafting the issue sketch/plan as an artifact with `RequestFeedback: true`.
 4. **MANDATORY APPROVAL GATE (STOP)**: Yielding the turn immediately and awaiting explicit user approval.
-5. **Issue Dispatch & Async Tracking**: Creating the GitHub issue with `--confirmed` and non-blocking monitoring.
+5. **Issue Dispatch & Async Tracking**: Creating the GitHub issue via `gh` and non-blocking monitoring.
 6. **CI & Automated Review**: Inspecting Jules's pull request, checking CI test suites, and delivering an explicit verdict.
 
 --------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ Jules operates in a cloud VM and achieves the highest success rate when given ex
      - **Target Files & Line Ranges**
      - **Acceptance Criteria Checklist**
      - **Verification / Test Commands**
-     - **Constraints & Architectural Rules** (document repo-specific patterns from the target repository's `AGENTS.md` and keep the canonical GitHub links to `rules/code-structure.md`, `rules/testing.md`, and `rules/documentation.md`; note that `create_jules_issue.sh` automatically fetches and appends their published online contents from GitHub at dispatch time)
+     - **Constraints & Architectural Rules** (document repo-specific patterns from the target repository's `AGENTS.md` and keep the canonical GitHub links to `rules/code-structure.md`, `rules/testing.md`, and `rules/documentation.md`; note that Phase 4 fetches and appends their published online contents from GitHub via `gh api` at dispatch time)
 
 --------------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ Jules operates in a cloud VM and achieves the highest success rate when given ex
 > **CRITICAL: NEVER FILE THE ISSUE IN THE SAME TURN AS CREATING THE ARTIFACT.**
 >
 > 1. **Immediate Turn End**: After creating or updating the plan artifact, you MUST STOP calling tools immediately. Output a message pointing the user to the artifact and end your turn.
-> 2. **No Tool Chaining**: You are **STRICTLY FORBIDDEN** from invoking `create_jules_issue.sh`, `gh issue create`, or any command that creates an issue within the same turn that created or edited the artifact.
+> 2. **No Tool Chaining**: You are **STRICTLY FORBIDDEN** from invoking `gh issue create` or any command that creates an issue within the same turn that created or edited the artifact.
 > 3. **Wait for Subsequent User Message**: You must wait for the user to explicitly review the artifact and reply in a new turn (e.g., clicking "Proceed", saying "approved", "looks good", or "file it").
 > 4. If the user requests changes, update the artifact and repeat the approval gate.
 
@@ -85,17 +85,24 @@ Jules operates in a cloud VM and achieves the highest success rate when given ex
 
 **Execute this phase ONLY after receiving explicit user approval in a subsequent message.**
 
-1. **Dispatch via Helper Script**:
-   - Call the helper script (located at `./scripts/create_jules_issue.sh` relative to this skill directory) with `--body-file` pointing to the approved plan artifact or markdown file and the `--confirmed` flag (prefer `--body-file` over double-quoted `--body "..."` so backticks and `$` in markdown are never expanded by the shell):
+1. **Dispatch via `gh` CLI**:
+   - Ensure the `jules` label exists, fetch and append the published global rules from `michalgr/agents-config@main` on GitHub (never from local files), and create the issue by reading the approved plan file via stdin (`--body-file -`) so markdown backticks and `$` variables are never expanded by the shell:
      ```bash
-     <skill-dir>/scripts/create_jules_issue.sh \
-       --title "Fix: <Concise title>" \
-       --body-file "<path-to-approved-plan.md>" \
-       --confirmed
+     gh label create jules --description "Tasks delegated to Jules agent" --color "0E8A16" --force >/dev/null && \
+     issue_body="$(
+       set -euo pipefail
+       cat "<path-to-approved-plan.md>"
+       printf '\n\n---\n\n## Global Coding, Testing, and Documentation Guidelines\n'
+       for rule in rules/code-structure.md rules/testing.md rules/documentation.md; do
+         printf '\n'
+         gh api -X GET -H "Accept: application/vnd.github.raw" "/repos/michalgr/agents-config/contents/${rule}" -f ref=main \
+           | awk '/^(```+|~~~+)/{f=!f} !f && /^#+[[:space:]]/{$0="##"$0} 1'
+       done
+     )" && \
+     printf '%s\n' "$issue_body" | gh issue create --title "Fix: <Concise title>" --label "jules" --body-file -
      ```
-   - *Note*: `create_jules_issue.sh` will fail if `--confirmed` is omitted.
 2. **Report Dispatch to User**:
-   - Provide the issue number and clickable URL.
+   - Provide the issue number and clickable URL returned by `gh issue create`.
    - Confirm that Jules has been summoned via the `jules` label.
 
 --------------------------------------------------------------------------------
@@ -110,7 +117,7 @@ Jules takes between 5 to 15 minutes to clone, build, attempt fixes, and run test
 1. **Initial Status Check**:
    - Check if a PR already exists (unlikely in the first 60 seconds, but verify):
      ```bash
-     <skill-dir>/scripts/check_jules_pr.sh --issue <ISSUE_NUMBER>
+     gh pr list --state all --json number,title,state,isDraft,headRefName,url
      ```
 2. **Yield Control with Scheduling**:
    - If the PR is not ready, inform the user:
@@ -125,12 +132,10 @@ Once Jules opens a Pull Request:
 
 1. **Inspect PR & CI Status**:
    ```bash
-   <skill-dir>/scripts/check_jules_pr.sh --issue <ISSUE_NUMBER> --checks --diff-stat
-   ```
-   Or via `gh`:
-   ```bash
+   gh pr list --state all --json number,title,state,isDraft,headRefName,url
    gh pr view <PR_NUMBER>
    gh pr checks <PR_NUMBER>
+   gh pr diff <PR_NUMBER> --stat
    ```
 
 2. **Conduct Automated Review of the PR Diff**:
