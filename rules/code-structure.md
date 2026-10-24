@@ -25,7 +25,7 @@
   * Keep functions (both theorems and lemmas) up to **25 lines of code** (excluding docstrings and comments).
   * **Cohesion comes first:** Lemmas must make logical sense as self-contained conceptual steps—do not slice code arbitrarily just to satisfy a line count. It is fine to occasionally exceed 25 lines when splitting would harm clarity, such as in long `match`/`switch` statements or exhaustive pattern matching.
 * **Code Order (`Definitions → Lemmas → Theorems`):**
-  * Organize code within a module so that helper building blocks precede the entry points that use them, while keeping the top-down conceptual overview (`Definitions → Theorems → Lemmas`) in the module's top-of-file **outline** comment:
+  * Organize code within a module so that helper building blocks precede the entry points that use them, while keeping the top-down conceptual reasoning (`Definitions → Theorems → Lemmas`) in the module's top-of-file **outline** comment (when the module is complex enough to warrant one):
     1. **Definitions:** Core types, data structures, and constants (establishing the vocabulary and invariants first).
     2. **Lemmas (Helpers):** Helper functions ordered to build up toward the entry points they support.
     3. **Theorems (Entry Points / Public API):** Main public functions and high-level orchestrators that compose the helpers above.
