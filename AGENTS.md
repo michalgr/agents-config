@@ -14,5 +14,5 @@ If your agent harness does not automatically inline the `@[...]` rule includes b
 3. **Testing Guidelines** (tests as concise worked examples):
    @[Testing Guidelines](./rules/testing.md)
 
-4. **Commentary & Documentation Guidelines** (docstrings vs. implementation comments, Module Master Plan, documentation standards):
+4. **Commentary & Documentation Guidelines** (docstrings vs. implementation comments, Module Master Plan, and `docs/*.md` architecture/trade-off docs):
    @[Commentary & Documentation Guidelines](./rules/documentation.md)

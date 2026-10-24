@@ -36,7 +36,7 @@ Before delegating to Jules, investigate the problem locally using read-only tool
      - Exact target files and line ranges.
      - Existing test files covering the relevant modules.
      - Reproducible commands (e.g. `cargo test`, `pytest`, `go test ./...`, `npm test`).
-   - Identify any constraints, API stability requirements, or style guidelines in both the repository's `AGENTS.md` and your global `AGENTS.md`.
+   - Identify any constraints, API stability requirements, architectural trade-offs, or style guidelines in the repository's `AGENTS.md`, `docs/*.md`, and your global `AGENTS.md`.
 
 --------------------------------------------------------------------------------
 
@@ -145,7 +145,7 @@ Once Jules opens a Pull Request:
      - Did CI pass without errors or warnings?
      - **Code Structure (`rules/code-structure.md`)**: Are functions structured as high-level Theorems and pure Lemmas ($\le 25$ lines, with cohesion exceptions) in `Definitions → Theorems → Lemmas` reading order, using narrow domain types and boundary assertions, and keeping modules within the 400 / 800 / 1,200-line thresholds (with a Subsystem Table of Contents when multi-module)?
      - **Testing (`rules/testing.md`)**: Are tests written as concise worked examples using shared test lemmas/fixtures rather than copy-paste boilerplate?
-     - **Commentary & Documentation (`rules/documentation.md`)**: Do modified/new modules include a non-docstring **Module Master Plan** comment at the top and contextualizing non-docstring comments on classes/functions (kept in sync without drift), with clean separation of docstrings vs. implementation comments?
+     - **Commentary & Documentation (`rules/documentation.md`)**: Do modified/new modules include a non-docstring **Module Master Plan** comment at the top and contextualizing non-docstring comments on classes/functions (kept in sync without drift), with clean separation of docstrings vs. implementation comments? Are cross-module designs, system diagrams, key trade-offs, and external sources documented or updated in `docs/*.md` and linked from module Master Plans?
 
 3. **Formulate Explicit Verdict & Merge Recommendation**:
    Deliver a definitive recommendation with one of three outcomes:
