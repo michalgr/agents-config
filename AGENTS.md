@@ -11,7 +11,7 @@ If your agent harness does not automatically inline the `@[...]` rule includes b
 2. **Code Design & Structure Guidelines** (philosophy, Theorems & Lemmas, narrow types, module size limits, language standards):
    @[Code Design & Structure Guidelines](./rules/code-structure.md)
 
-3. **Testing Guidelines** (tests as concise worked examples):
+3. **Testing Guidelines** (tests as first-class code, documented testing strategy, testing invariants over implementation, shared test infra):
    @[Testing Guidelines](./rules/testing.md)
 
 4. **Commentary & Documentation Guidelines** (docstrings vs. implementation comments, Module Master Plan, and `docs/*.md` architecture/trade-off docs):
