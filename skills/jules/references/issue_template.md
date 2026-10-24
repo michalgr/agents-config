@@ -3,7 +3,7 @@
 Use this template to compile structured GitHub issues when delegating tasks to Jules.
 Jules executes autonomously inside a cloud container, so providing concrete, reproducible instructions yields the highest success rate.
 
-```markdown
+````markdown
 ## Overview
 <!-- Concise description of the issue, bug, or requested feature -->
 
@@ -39,4 +39,4 @@ Jules executes autonomously inside a cloud container, so providing concrete, rep
   - [Code Design & Structure Guidelines](https://github.com/michalgr/agents-config/blob/main/rules/code-structure.md)
   - [Testing Guidelines](https://github.com/michalgr/agents-config/blob/main/rules/testing.md)
   - [Commentary & Documentation Guidelines](https://github.com/michalgr/agents-config/blob/main/rules/documentation.md)
-```
+````
