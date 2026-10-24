@@ -24,12 +24,12 @@
 * **Function Size ($\le 25$ lines) & Logical Cohesion:**
   * Keep functions (both theorems and lemmas) up to **25 lines of code** (excluding docstrings and comments).
   * **Cohesion comes first:** Lemmas must make logical sense as self-contained conceptual steps—do not slice code arbitrarily just to satisfy a line count. It is fine to occasionally exceed 25 lines when splitting would harm clarity, such as in long `match`/`switch` statements or exhaustive pattern matching.
-* **Reading Order (`Definitions → Theorems → Lemmas`):**
-  * Provided the language allows it, organize code within a module in top-down order:
+* **Code Order (`Definitions → Lemmas → Theorems`):**
+  * Organize code within a module so that helper building blocks precede the entry points that use them, while keeping the top-down conceptual overview (`Definitions → Theorems → Lemmas`) in the module's **Master Plan** comment:
     1. **Definitions:** Core types, data structures, and constants (establishing the vocabulary and invariants first).
-    2. **Theorems (Entry Points / Public API):** Main public functions and high-level orchestrators.
-    3. **Lemmas (Helpers):** Helper functions ordered to follow the flow of the entry points they support.
-  * **Mental Model Only (No Math Jargon in Code/Docs):** "Theorems" and "lemmas" are a mental model for structuring code—never write math terminology (`Theorem`, `Lemma`, `Proof`, `Corollary`) in code comments, section headers, identifiers, docstrings, or documentation. Use standard engineering terms (e.g., `Entry Points`, `Public API`, `Helper Functions`).
+    2. **Lemmas (Helpers):** Helper functions ordered to build up toward the entry points they support.
+    3. **Theorems (Entry Points / Public API):** Main public functions and high-level orchestrators that compose the helpers above.
+  * **Mental Model Only (No Math Jargon in Code/Docs):** "Theorems" and "lemmas" are a mental model for structuring code—never write math terminology (`Theorem`, `Lemma`, `Proof`, `Corollary`) in code comments, section headers, identifiers, docstrings, or documentation. Use standard engineering terms (e.g., `Definitions`, `Helper Functions`, `Entry Points` / `Public API`).
 * **Multi-Module Organization & Size Thresholds:**
   * Do not hesitate to group functions and classes across multiple cohesive modules ("chapters")—avoid single source files that grow into thousands of lines.
   * Treat **400, 800, and 1,200 lines** as escalating levels of "this module is getting too big":

@@ -5,7 +5,7 @@
   * Human reviewers typically spend most of their cognitive energy auditing production code and are mentally drained by the time they reach test files—often skimming or ignoring tests if CI is green.
   * Left unchecked, this blind spot turns the test suite into a dumping ground of technical debt. As an agent, you must hold test code to the **exact same architectural and readability standards** as production code.
 * **All Code Structure & Documentation Rules Apply to Tests:**
-  * Test files and test helpers must follow all rules in `code-structure.md` and `documentation.md`: decompose test logic into high-level **theorems** (test cases) and **pure lemmas** (setup/assertion helpers $\le 25$ lines of logic; declarative table-driven test data arrays may exceed 25 lines when cohesive), organize in `Definitions → Theorems → Lemmas` order, use narrow types, and enforce the **400 / 800 / 1,200-line** module size thresholds.
+  * Test files and test helpers must follow all rules in `code-structure.md` and `documentation.md`: decompose test logic into high-level **theorems** (test cases) and **pure lemmas** (setup/assertion helpers $\le 25$ lines of logic; declarative table-driven test data arrays may exceed 25 lines when cohesive), organize code in `Definitions → Lemmas → Theorems` order (while keeping `Definitions → Theorems → Lemmas` in the test module's Master Plan), use narrow types, and enforce the **400 / 800 / 1,200-line** module size thresholds.
 
 ## 2. Documented Testing Strategy
 * **Establish & Document a Testing Strategy per Component:**
