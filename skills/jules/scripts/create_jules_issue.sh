@@ -32,6 +32,8 @@ EOF
 TITLE=""
 BODY=""
 BODY_FILE=""
+HAS_BODY=false
+HAS_BODY_FILE=false
 REPO_ARGS=()
 RULES_REPO="michalgr/agents-config"
 RULES_REF="main"
@@ -54,11 +56,13 @@ while [[ $# -gt 0 ]]; do
     -b|--body)
       [[ $# -ge 2 ]] || { echo "Error: $1 requires an argument." >&2; usage; }
       BODY="$2"
+      HAS_BODY=true
       shift 2
       ;;
     -f|--body-file)
       [[ $# -ge 2 ]] || { echo "Error: $1 requires an argument." >&2; usage; }
       BODY_FILE="$2"
+      HAS_BODY_FILE=true
       shift 2
       ;;
     -R|--repo)
@@ -99,22 +103,22 @@ if [[ "$CONFIRMED" != true ]]; then
   exit 1
 fi
 
-if [[ -z "$TITLE" ]]; then
-  echo "Error: --title is required." >&2
+if [[ ! "$TITLE" =~ [^[:space:]] ]]; then
+  echo "Error: --title is required and must not be empty." >&2
   usage
 fi
 
-if [[ -z "$BODY" && -z "$BODY_FILE" ]]; then
+if [[ "$HAS_BODY" != true && "$HAS_BODY_FILE" != true ]]; then
   echo "Error: Either --body or --body-file must be provided." >&2
   usage
 fi
 
-if [[ -n "$BODY" && -n "$BODY_FILE" ]]; then
+if [[ "$HAS_BODY" == true && "$HAS_BODY_FILE" == true ]]; then
   echo "Error: Provide either --body or --body-file, not both." >&2
   usage
 fi
 
-if [[ -n "$BODY_FILE" ]]; then
+if [[ "$HAS_BODY_FILE" == true ]]; then
   if [[ ! -f "$BODY_FILE" ]]; then
     echo "Error: Body file '$BODY_FILE' does not exist." >&2
     exit 1
@@ -122,6 +126,11 @@ if [[ -n "$BODY_FILE" ]]; then
   FINAL_BODY="$(cat "$BODY_FILE")"
 else
   FINAL_BODY="$BODY"
+fi
+
+if [[ ! "$FINAL_BODY" =~ [^[:space:]] ]]; then
+  echo "Error: Issue body must not be empty." >&2
+  exit 1
 fi
 
 # 1. Verify GitHub CLI is available
@@ -142,8 +151,13 @@ if [[ "$APPEND_GLOBAL_RULES" == true && "$FINAL_BODY" != *"$GLOBAL_SECTION_HEADE
   FETCHED_RULES=""
   for rule_path in "${SHARED_RULE_PATHS[@]}"; do
     if rule_content="$(gh api -X GET -H "Accept: application/vnd.github.raw" "/repos/${RULES_REPO}/contents/${rule_path}" -f ref="$RULES_REF" 2>/dev/null)"; then
-      # Demote markdown headings by two levels (# -> ###, ## -> ####) so they nest cleanly under the H2 section header
-      demoted_content="$(printf '%s\n' "$rule_content" | sed -E 's/^(#+)/##\1/')"
+      # Demote ATX markdown headings outside fenced code blocks by two levels (# -> ###, ## -> ####)
+      # so they nest cleanly under the H2 section header without mutating code block comments.
+      demoted_content="$(printf '%s\n' "$rule_content" | awk '
+        /^(```+|~~~+)/ { in_fence = !in_fence }
+        !in_fence && /^#+[[:space:]]/ { $0 = "##" $0 }
+        { print }
+      ')"
       if [[ -n "$FETCHED_RULES" ]]; then
         FETCHED_RULES="${FETCHED_RULES}"$'\n\n'"${demoted_content}"
       else
@@ -154,9 +168,12 @@ if [[ "$APPEND_GLOBAL_RULES" == true && "$FINAL_BODY" != *"$GLOBAL_SECTION_HEADE
     fi
   done
 
-  if [[ -n "$FETCHED_RULES" ]]; then
-    FINAL_BODY="${FINAL_BODY}"$'\n\n---\n\n'"${GLOBAL_SECTION_HEADER}"$'\n\n> Automatically fetched from [`'"${RULES_REPO}@${RULES_REF}"'`](https://github.com/'"${RULES_REPO}"'/tree/'"${RULES_REF}"'/rules)\n\n'"${FETCHED_RULES}"
+  if [[ -z "$FETCHED_RULES" ]]; then
+    echo "Error: Failed to fetch any published global rules from ${RULES_REPO}@${RULES_REF}. Verify --rules-repo/--rules-ref or pass --no-global-rules." >&2
+    exit 1
   fi
+
+  FINAL_BODY="${FINAL_BODY}"$'\n\n---\n\n'"${GLOBAL_SECTION_HEADER}"$'\n\n> Automatically fetched from [`'"${RULES_REPO}@${RULES_REF}"'`](https://github.com/'"${RULES_REPO}"'/tree/'"${RULES_REF}"'/rules)\n\n'"${FETCHED_RULES}"
 fi
 
 # 4. Ensure 'jules' label exists (idempotent via --force)
