@@ -1,7 +1,7 @@
 # agents-config
 
 Shared AI agent rules (`AGENTS.md`, `rules/`) and custom skills (`skills/`) used across:
-- **[`.dotfiles`](https://github.com/michalgr/.dotfiles)** (macOS host environment, managed via GNU Stow and Git submodule)
+- **[`mac.dotfiles`](https://github.com/michalgr/mac.dotfiles)** (macOS host environment, managed via GNU Stow and Git submodule)
 - **[`agent-jail`](https://github.com/michalgr/agent-jail)** (containerized Nix environment, managed via Nix Flakes and Home Manager)
 
 ## Structure
