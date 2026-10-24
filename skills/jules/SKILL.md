@@ -65,7 +65,7 @@ Jules operates in a cloud VM and achieves the highest success rate when given ex
      - **Target Files & Line Ranges**
      - **Acceptance Criteria Checklist**
      - **Verification / Test Commands**
-     - **Constraints & Architectural Rules** (inline the relevant design, language, and documentation rules from your global `AGENTS.md`—excluding interactive-only rules like "Never commit changes on your own", since Jules must commit to open a PR)
+     - **Constraints & Architectural Rules** (document repo-specific patterns from the target repository's `AGENTS.md` and keep the canonical GitHub links to `rules/code-structure.md`, `rules/testing.md`, and `rules/documentation.md`; note that `create_jules_issue.sh` automatically fetches and appends their published online contents from GitHub at dispatch time)
 
 --------------------------------------------------------------------------------
 
@@ -138,11 +138,14 @@ Once Jules opens a Pull Request:
      ```bash
      gh pr diff <PR_NUMBER>
      ```
-   - Evaluate against the original **Acceptance Criteria**:
+   - Evaluate against the original **Acceptance Criteria** and the **Global Agent Guidelines**:
      - Did Jules modify the expected files without unintended side-effects?
      - Are any unexpected files changed or deleted?
      - Did Jules add or update tests?
      - Did CI pass without errors or warnings?
+     - **Code Structure (`rules/code-structure.md`)**: Are functions structured as high-level Theorems and pure Lemmas ($\le 25$ lines, with cohesion exceptions) in `Definitions → Theorems → Lemmas` reading order, using narrow domain types and boundary assertions, and keeping modules within the 400 / 800 / 1,200-line thresholds (with a Subsystem Table of Contents when multi-module)?
+     - **Testing (`rules/testing.md`)**: Are tests written as concise worked examples using shared test lemmas/fixtures rather than copy-paste boilerplate?
+     - **Commentary & Documentation (`rules/documentation.md`)**: Do modified/new modules include a non-docstring **Module Master Plan** comment at the top and contextualizing non-docstring comments on classes/functions (kept in sync without drift), with clean separation of docstrings vs. implementation comments?
 
 3. **Formulate Explicit Verdict & Merge Recommendation**:
    Deliver a definitive recommendation with one of three outcomes:

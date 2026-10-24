@@ -33,8 +33,10 @@ Jules executes autonomously inside a cloud container, so providing concrete, rep
 ```
 
 ## Architectural & Style Constraints
-<!-- Inline any repo-specific patterns (from the repo's AGENTS.md) as well as relevant global design, documentation, and language rules from your global AGENTS.md (excluding interactive commit restrictions) -->
+<!-- Document any repo-specific patterns (from the target repo's AGENTS.md). Note: create_jules_issue.sh automatically fetches and appends the published global rule files from github.com/michalgr/agents-config when creating the GitHub issue. -->
 - Follow conventions established in the repository's `AGENTS.md`.
-- Prefer proper, maintainable fixes over short-term hacks or workarounds.
-- Ensure all code, comments, docstrings, and commit messages are in English.
+- Follow the shared global agent guidelines (automatically appended below on dispatch):
+  - [Code Design & Structure Guidelines](https://github.com/michalgr/agents-config/blob/main/rules/code-structure.md)
+  - [Testing Guidelines](https://github.com/michalgr/agents-config/blob/main/rules/testing.md)
+  - [Commentary & Documentation Guidelines](https://github.com/michalgr/agents-config/blob/main/rules/documentation.md)
 ```
