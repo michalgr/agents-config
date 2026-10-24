@@ -148,10 +148,10 @@ Once Jules opens a Pull Request:
      - **Commentary & Documentation (`rules/documentation.md`)**: Do modified/new modules include a non-docstring **Module Master Plan** comment at the top and contextualizing non-docstring comments on classes/functions (kept in sync without drift), with clean separation of docstrings vs. implementation comments? Are cross-module designs, system diagrams, key trade-offs, and external sources documented or updated in `docs/*.md` and linked from module Master Plans?
 
 3. **Formulate Explicit Verdict & Merge Recommendation**:
-   Deliver a definitive recommendation with one of three outcomes:
+   Deliver a definitive recommendation with one of three outcomes (never execute `gh pr merge` autonomously without explicit user approval):
    - **Merge As-Is**:
      - *When to use*: All acceptance criteria are satisfied, CI checks pass cleanly, and the design adheres to repository guidelines without regressions.
-     - *Command*:
+     - *Recommended Command (wait for user confirmation before running)*:
        ```bash
        gh pr merge <PR_NUMBER> --squash
        ```

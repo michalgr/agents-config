@@ -6,6 +6,9 @@
   * The economy of code writing and maintenance is different when working with AI agents. Because writing, refactoring, and maintaining clean code is highly accessible, we can afford to spend the effort to "do the right thing" from the start.
   * **AI writes code fast; humans are the bottleneck when reviewing and verifying it.** Always optimize code structure, types, tests, and commentary to minimize cognitive load and help human readers quickly understand and verify correctness.
   * Always prioritize the long-term maintainability, clean design, and structural correctness of the codebase.
+* **Repository Precedence & Task Scope Discipline:**
+  * Explicit repository-local conventions (`AGENTS.md`, `CONTRIBUTING.md`) take precedence over these global defaults when they conflict.
+  * Apply structural and module-size refactoring to code within the scope of your task—do not perform unrelated mass-refactoring of untouched legacy files during a targeted bug fix.
 
 ## 2. Code Structure: Theorems, Lemmas, Types, and Modules
 * **Functions as Theorems and Lemmas:**

@@ -5,7 +5,7 @@
   * Human reviewers typically spend most of their cognitive energy auditing production code and are mentally drained by the time they reach test files—often skimming or ignoring tests if CI is green.
   * Left unchecked, this blind spot turns the test suite into a dumping ground of technical debt. As an agent, you must hold test code to the **exact same architectural and readability standards** as production code.
 * **All Code Structure & Documentation Rules Apply to Tests:**
-  * Test files and test helpers must follow all rules in `code-structure.md` and `documentation.md`: decompose test logic into high-level **theorems** (test cases) and **pure lemmas** (setup/assertion helpers $\le 25$ lines), organize in `Definitions → Theorems → Lemmas` order, use narrow types, and enforce the **400 / 800 / 1,200-line** module size thresholds.
+  * Test files and test helpers must follow all rules in `code-structure.md` and `documentation.md`: decompose test logic into high-level **theorems** (test cases) and **pure lemmas** (setup/assertion helpers $\le 25$ lines of logic; declarative table-driven test data arrays may exceed 25 lines when cohesive), organize in `Definitions → Theorems → Lemmas` order, use narrow types, and enforce the **400 / 800 / 1,200-line** module size thresholds.
 
 ## 2. Documented Testing Strategy
 * **Establish & Document a Testing Strategy per Component:**
@@ -26,9 +26,9 @@
 
 ## 4. Shared Test Infrastructure as High-Priority Architecture
 * **No Ad-Hoc, Throwaway Test Plumbing:**
-  * Never scatter quick, one-off test harnesses, copy-pasted setup blocks, or inline mock wiring across individual test files.
+  * Never scatter quick, one-off test harnesses, copy-pasted setup blocks, or inline mock wiring across individual test files. Simple, file-local setup lemmas may live in that test file's `Lemmas` section, whereas reusable or non-trivial infrastructure must be shared.
 * **Treat Test Infrastructure as High-Priority Production Code:**
-  * When testing requires fixtures, domain builders, in-memory fakes, simulators, or custom assertion DSLs, build them as **shared, reusable infrastructure** in dedicated modules (e.g., `testutil/`, `testing/`, `fixtures/`).
+  * When testing requires fixtures, domain builders, in-memory fakes, simulators, or custom assertion DSLs reused across test files (or involving non-trivial logic), build them as **shared, reusable infrastructure** in dedicated modules (e.g., `testutil/`, `testing/`, `fixtures/`).
   * Apply strict design, typing, and documentation standards to shared test infrastructure—it is a high-leverage architectural foundation of the repository.
 * **Prefer Composable Fakes & Builders Over Brittle Mocks:**
   * Favor high-fidelity, reusable in-memory fakes and fluent test data builders over per-test mock expectation chains that couple tests to internal implementation mechanics.

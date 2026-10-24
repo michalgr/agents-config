@@ -109,6 +109,11 @@ if [[ -z "$BODY" && -z "$BODY_FILE" ]]; then
   usage
 fi
 
+if [[ -n "$BODY" && -n "$BODY_FILE" ]]; then
+  echo "Error: Provide either --body or --body-file, not both." >&2
+  usage
+fi
+
 if [[ -n "$BODY_FILE" ]]; then
   if [[ ! -f "$BODY_FILE" ]]; then
     echo "Error: Body file '$BODY_FILE' does not exist." >&2
@@ -132,14 +137,17 @@ if ! gh auth status >/dev/null 2>&1; then
 fi
 
 # 3. Fetch published global rules from GitHub (never local files) and append to FINAL_BODY
-if [[ "$APPEND_GLOBAL_RULES" == true ]]; then
+GLOBAL_SECTION_HEADER="## Global Coding, Testing, and Documentation Guidelines"
+if [[ "$APPEND_GLOBAL_RULES" == true && "$FINAL_BODY" != *"$GLOBAL_SECTION_HEADER"* ]]; then
   FETCHED_RULES=""
   for rule_path in "${SHARED_RULE_PATHS[@]}"; do
-    if rule_content="$(gh api -H "Accept: application/vnd.github.raw" "/repos/${RULES_REPO}/contents/${rule_path}?ref=${RULES_REF}" 2>/dev/null)"; then
+    if rule_content="$(gh api -X GET -H "Accept: application/vnd.github.raw" "/repos/${RULES_REPO}/contents/${rule_path}" -f ref="$RULES_REF" 2>/dev/null)"; then
+      # Demote markdown headings by two levels (# -> ###, ## -> ####) so they nest cleanly under the H2 section header
+      demoted_content="$(printf '%s\n' "$rule_content" | sed -E 's/^(#+)/##\1/')"
       if [[ -n "$FETCHED_RULES" ]]; then
-        FETCHED_RULES="${FETCHED_RULES}"$'\n\n'"${rule_content}"
+        FETCHED_RULES="${FETCHED_RULES}"$'\n\n'"${demoted_content}"
       else
-        FETCHED_RULES="${rule_content}"
+        FETCHED_RULES="${demoted_content}"
       fi
     else
       echo "Warning: Could not fetch published rule '${rule_path}' from ${RULES_REPO}@${RULES_REF} on GitHub; skipping inline append for this file." >&2
@@ -147,26 +155,23 @@ if [[ "$APPEND_GLOBAL_RULES" == true ]]; then
   done
 
   if [[ -n "$FETCHED_RULES" ]]; then
-    FINAL_BODY="${FINAL_BODY}"$'\n\n---\n\n## Global Coding, Testing, and Documentation Guidelines\n\n> Automatically fetched from [`'"${RULES_REPO}@${RULES_REF}"'`](https://github.com/'"${RULES_REPO}"'/tree/'"${RULES_REF}"'/rules)\n\n'"${FETCHED_RULES}"
+    FINAL_BODY="${FINAL_BODY}"$'\n\n---\n\n'"${GLOBAL_SECTION_HEADER}"$'\n\n> Automatically fetched from [`'"${RULES_REPO}@${RULES_REF}"'`](https://github.com/'"${RULES_REPO}"'/tree/'"${RULES_REF}"'/rules)\n\n'"${FETCHED_RULES}"
   fi
 fi
 
-# 4. Ensure 'jules' label exists
-if ! gh label list "${REPO_ARGS[@]}" --limit 100 2>/dev/null | grep -qw "jules"; then
-  echo "Label 'jules' not found. Creating label 'jules'..." >&2
-  gh label create jules --description "Tasks delegated to Jules agent" --color "0E8A16" --force "${REPO_ARGS[@]}" >/dev/null 2>&1 || true
-fi
+# 4. Ensure 'jules' label exists (idempotent via --force)
+gh label create jules --description "Tasks delegated to Jules agent" --color "0E8A16" --force "${REPO_ARGS[@]}" >/dev/null 2>&1 || true
 
-# 5. Create the issue
+# 5. Create the issue (passing body via stdin to avoid ARG_MAX limits)
 echo "Creating GitHub issue tagged for Jules..." >&2
-ISSUE_URL=$(gh issue create --title "$TITLE" --body "$FINAL_BODY" --label "jules" "${REPO_ARGS[@]}")
+ISSUE_URL="$(printf '%s\n' "$FINAL_BODY" | gh issue create --title "$TITLE" --body-file - --label "jules" "${REPO_ARGS[@]}")"
 
 if [[ -z "$ISSUE_URL" ]]; then
   echo "Error: Failed to create issue." >&2
   exit 1
 fi
 
-ISSUE_NUM=$(basename "$ISSUE_URL")
+ISSUE_NUM="$(basename "$ISSUE_URL")"
 
 echo "Created Jules issue successfully!" >&2
 echo "Issue Number: $ISSUE_NUM" >&2

@@ -35,11 +35,19 @@ while [[ $# -gt 0 ]]; do
     -i|--issue)
       [[ $# -ge 2 ]] || { echo "Error: $1 requires an argument." >&2; usage; }
       ISSUE_NUM="${2#\#}"
+      if [[ ! "$ISSUE_NUM" =~ ^[0-9]+$ ]]; then
+        echo "Error: --issue requires a numeric issue number (got '$2')." >&2
+        exit 1
+      fi
       shift 2
       ;;
     -p|--pr)
       [[ $# -ge 2 ]] || { echo "Error: $1 requires an argument." >&2; usage; }
       PR_NUM="${2#\#}"
+      if [[ ! "$PR_NUM" =~ ^[0-9]+$ ]]; then
+        echo "Error: --pr requires a numeric pull request number (got '$2')." >&2
+        exit 1
+      fi
       shift 2
       ;;
     -R|--repo)
@@ -73,12 +81,16 @@ fi
 # 1. If PR number not explicitly provided, discover PR by issue number or jules branches
 if [[ -z "$PR_NUM" ]]; then
   if [[ -n "$ISSUE_NUM" ]]; then
-    # Match open PRs whose title, body, or headRefName explicitly references #<ISSUE_NUM> or issue-<ISSUE_NUM>
-    PR_NUM=$(gh pr list "${REPO_ARGS[@]}" --json number,title,body,headRefName \
-      -q "[.[] | select((.title + \" \" + .body + \" \" + .headRefName) | test(\"(^|[^0-9])#?${ISSUE_NUM}([^0-9]|$)\"))][0].number" 2>/dev/null || true)
+    # Match PRs whose title/body explicitly references #<ISSUE_NUM> or issue-<ISSUE_NUM>,
+    # or whose branch name (headRefName) contains <ISSUE_NUM> as a distinct number token.
+    PR_NUM=$(gh pr list "${REPO_ARGS[@]}" --state all --json number,title,body,headRefName \
+      -q "[.[] | select(
+        ((.title + \" \" + (.body // \"\")) | test(\"(?i)(^|[^0-9a-z])(#|issue[-_ /]#?)${ISSUE_NUM}([^0-9]|$)\"))
+        or (.headRefName | test(\"(^|[^0-9])${ISSUE_NUM}([^0-9]|$)\"))
+      )][0].number" 2>/dev/null || true)
   else
     # When no issue number is specified, fall back to latest PR from a jules branch
-    PR_NUM=$(gh pr list "${REPO_ARGS[@]}" --search "head:jules" --json number -q '.[0].number' 2>/dev/null || true)
+    PR_NUM=$(gh pr list "${REPO_ARGS[@]}" --state all --search "head:jules" --json number -q '.[0].number' 2>/dev/null || true)
   fi
 fi
 
