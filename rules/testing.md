@@ -5,12 +5,12 @@
   * Human reviewers typically spend most of their cognitive energy auditing production code and are mentally drained by the time they reach test files—often skimming or ignoring tests if CI is green.
   * Left unchecked, this blind spot turns the test suite into a dumping ground of technical debt. As an agent, you must hold test code to the **exact same architectural and readability standards** as production code.
 * **All Code Structure & Documentation Rules Apply to Tests:**
-  * Test files and test helpers must follow all rules in `code-structure.md` and `documentation.md`: decompose test logic into high-level **theorems** (test cases) and **pure lemmas** (setup/assertion helpers $\le 25$ lines of logic; declarative table-driven test data arrays may exceed 25 lines when cohesive), organize code in `Definitions → Lemmas → Theorems` order (while keeping `Definitions → Theorems → Lemmas` in the test module's Master Plan), use narrow types, and enforce the **400 / 800 / 1,200-line** module size thresholds.
+  * Test files and test helpers must follow all rules in `code-structure.md` and `documentation.md`: decompose test logic into high-level **theorems** (test cases) and **pure lemmas** (setup/assertion helpers $\le 25$ lines of logic; declarative table-driven test data arrays may exceed 25 lines when cohesive), organize code in `Definitions → Lemmas → Theorems` order (while keeping `Definitions → Theorems → Lemmas` in the test module's top-of-file outline), use narrow types, and enforce the **400 / 800 / 1,200-line** module size thresholds.
 
 ## 2. Documented Testing Strategy
 * **Establish & Document a Testing Strategy per Component:**
   * Do not add reactive, ad-hoc test cases without a coherent plan. Every component or module must have a well-thought-out **Testing Strategy**.
-  * Document this strategy in the test file's **Module Master Plan** comment (and in `docs/*.md` when the strategy spans multiple modules or integration boundaries):
+  * Document this strategy in the test file's **Module Outline** comment (and in `docs/*.md` when the strategy spans multiple modules or integration boundaries):
     * **Target Invariants & Contracts:** Explicitly list the domain invariants, guarantees, and edge/boundary conditions the suite verifies.
     * **Test Organization & Scope:** Explain how the tests are structured (e.g., pure unit tests, table-driven cases, fake-backed integration tests) and what is covered elsewhere.
   * Keep the documented Testing Strategy in sync whenever new behaviors or invariants are added.

@@ -15,7 +15,7 @@ agents-config/
 │   ├── git-commit-policy.md       # Interactive Git commit approval policy (local harnesses)
 │   ├── code-structure.md          # Philosophy, Theorems & Lemmas, types, module size limits
 │   ├── testing.md                 # First-class test code, strategy, invariants, shared test infra
-│   └── documentation.md           # In-code commentary, Module Master Plan, and docs/*.md rules
+│   └── documentation.md           # In-code commentary, Module Outline, and docs/*.md rules
 └── skills/                        # Harness-agnostic agent skills
     └── jules/                     # Workflow for delegating tasks to Google's Jules agent
         ├── SKILL.md
