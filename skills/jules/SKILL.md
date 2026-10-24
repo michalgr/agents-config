@@ -86,11 +86,11 @@ Jules operates in a cloud VM and achieves the highest success rate when given ex
 **Execute this phase ONLY after receiving explicit user approval in a subsequent message.**
 
 1. **Dispatch via Helper Script**:
-   - Call the helper script (located at `./scripts/create_jules_issue.sh` relative to this skill directory) with the `--confirmed` flag:
+   - Call the helper script (located at `./scripts/create_jules_issue.sh` relative to this skill directory) with `--body-file` pointing to the approved plan artifact or markdown file and the `--confirmed` flag (prefer `--body-file` over double-quoted `--body "..."` so backticks and `$` in markdown are never expanded by the shell):
      ```bash
      <skill-dir>/scripts/create_jules_issue.sh \
        --title "Fix: <Concise title>" \
-       --body "<Formatted issue content>" \
+       --body-file "<path-to-approved-plan.md>" \
        --confirmed
      ```
    - *Note*: `create_jules_issue.sh` will fail if `--confirmed` is omitted.
