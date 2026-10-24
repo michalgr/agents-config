@@ -27,8 +27,9 @@
 * **Reading Order (`Definitions → Theorems → Lemmas`):**
   * Provided the language allows it, organize code within a module in top-down order:
     1. **Definitions:** Core types, data structures, and constants (establishing the vocabulary and invariants first).
-    2. **Theorems:** Main public functions and high-level entry points.
-    3. **Lemmas:** Helper functions ordered to follow the flow of the theorems they support.
+    2. **Theorems (Entry Points / Public API):** Main public functions and high-level orchestrators.
+    3. **Lemmas (Helpers):** Helper functions ordered to follow the flow of the entry points they support.
+  * **Mental Model Only (No Math Jargon in Code/Docs):** "Theorems" and "lemmas" are a mental model for structuring code—never write math terminology (`Theorem`, `Lemma`, `Proof`, `Corollary`) in code comments, section headers, identifiers, docstrings, or documentation. Use standard engineering terms (e.g., `Entry Points`, `Public API`, `Helper Functions`).
 * **Multi-Module Organization & Size Thresholds:**
   * Do not hesitate to group functions and classes across multiple cohesive modules ("chapters")—avoid single source files that grow into thousands of lines.
   * Treat **400, 800, and 1,200 lines** as escalating levels of "this module is getting too big":

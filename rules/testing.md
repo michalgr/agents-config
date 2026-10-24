@@ -26,7 +26,7 @@
 
 ## 4. Shared Test Infrastructure as High-Priority Architecture
 * **No Ad-Hoc, Throwaway Test Plumbing:**
-  * Never scatter quick, one-off test harnesses, copy-pasted setup blocks, or inline mock wiring across individual test files. Simple, file-local setup lemmas may live in that test file's `Lemmas` section, whereas reusable or non-trivial infrastructure must be shared.
+  * Never scatter quick, one-off test harnesses, copy-pasted setup blocks, or inline mock wiring across individual test files. Simple, file-local setup helpers may live in that test file's helper functions section, whereas reusable or non-trivial infrastructure must be shared.
 * **Treat Test Infrastructure as High-Priority Production Code:**
   * When testing requires fixtures, domain builders, in-memory fakes, simulators, or custom assertion DSLs reused across test files (or involving non-trivial logic), build them as **shared, reusable infrastructure** in dedicated modules (e.g., `testutil/`, `testing/`, `fixtures/`).
   * Apply strict design, typing, and documentation standards to shared test infrastructure—it is a high-leverage architectural foundation of the repository.
