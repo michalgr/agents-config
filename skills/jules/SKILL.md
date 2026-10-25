@@ -27,7 +27,7 @@ Delegation follows a 6-step lifecycle:
 Before delegating to Jules, investigate the problem locally using read-only tools. **Do not modify source files directly.**
 
 1. **Verify Git Tree State**:
-   - Run `git status` and `git diff --stat origin/HEAD` (or `origin/main`).
+   - Run `git status -sb`, check unpushed commits with `git log --oneline @{u}.. 2>/dev/null`, and check diff against remote with `git diff --stat origin/HEAD 2>/dev/null` (or `origin/main`).
    - *Crucial*: Jules checks out the remote branch from GitHub. If the user has relevant uncommitted or unpushed local changes, alert them immediately:
      > "Jules operates on the remote GitHub repository. You have unpushed local changes that Jules won't see. Would you like to commit/push them to a branch first?"
 
@@ -88,18 +88,27 @@ Jules operates in a cloud VM and achieves the highest success rate when given ex
 1. **Dispatch via `gh` CLI**:
    - Ensure the `jules` label exists, fetch and append the published global rules from `michalgr/agents-config@main` on GitHub (never from local files), and create the issue by reading the approved plan file via stdin (`--body-file -`) so markdown backticks and `$` variables are never expanded by the shell:
      ```bash
-     gh label create jules --description "Tasks delegated to Jules agent" --color "0E8A16" --force >/dev/null && \
-     issue_body="$(
+     (
        set -euo pipefail
-       cat "<path-to-approved-plan.md>"
-       printf '\n\n---\n\n## Global Coding, Testing, and Documentation Guidelines\n'
-       for rule in rules/code-structure.md rules/testing.md rules/documentation.md; do
-         printf '\n'
-         gh api -X GET -H "Accept: application/vnd.github.raw" "/repos/michalgr/agents-config/contents/${rule}" -f ref=main \
-           | awk '/^(```+|~~~+)/{f=!f} !f && /^#+[[:space:]]/{$0="##"$0} 1'
-       done
-     )" && \
-     printf '%s\n' "$issue_body" | gh issue create --title "Fix: <Concise title>" --label "jules" --body-file -
+       plan_file="<path-to-approved-plan.md>"
+       [[ -s "$plan_file" ]] || { echo "Error: missing or empty plan file: $plan_file" >&2; exit 1; }
+
+       gh label create jules --description "Tasks delegated to Jules agent" --color "0E8A16" --force >/dev/null
+
+       issue_body="$(
+         set -euo pipefail
+         cat "$plan_file"
+         printf '\n\n---\n\n## Global Coding, Testing, and Documentation Guidelines\n'
+         for rule in rules/code-structure.md rules/testing.md rules/documentation.md; do
+           raw_rule="$(gh api -X GET -H "Accept: application/vnd.github.raw" "/repos/michalgr/agents-config/contents/${rule}" -f ref=main)"
+           [[ -n "$raw_rule" ]] || { echo "Error: empty rule fetched for ${rule}" >&2; exit 1; }
+           printf '\n'
+           printf '%s\n' "$raw_rule" | awk '/^[[:space:]]*(```+|~~~+)/{f=!f} !f && /^#+[[:space:]]/{$0="##"$0} 1'
+         done
+       )"
+
+       printf '%s\n' "$issue_body" | gh issue create --title "Fix: <Concise title>" --label "jules" --body-file -
+     )
      ```
 2. **Report Dispatch to User**:
    - Provide the issue number and clickable URL returned by `gh issue create`.
@@ -115,12 +124,14 @@ Jules takes between 5 to 15 minutes to clone, build, attempt fixes, and run test
 > **NEVER run an active spin-lock (`sleep 10` or continuous polling loop)** in the chat. Busy-waiting consumes unnecessary tokens and blocks the user from asking further questions.
 
 1. **Initial Status Check**:
-   - Check if a PR already exists (unlikely in the first 60 seconds, but verify):
+   - Check if a PR already exists or if Jules posted comments/errors on the issue:
      ```bash
-     gh pr list --state all --json number,title,state,isDraft,headRefName,url
+     gh issue view <ISSUE_NUMBER> --comments
+     gh pr list --state all --search "<ISSUE_NUMBER>" --json number,title,state,isDraft,headRefName,url
      ```
+   - If Jules encountered a setup failure or commented asking for clarification, notify the user immediately.
 2. **Yield Control with Scheduling**:
-   - If the PR is not ready, inform the user:
+   - If neither a PR nor a blocking issue comment is present, inform the user:
      > "Issue #<N> has been created and tagged for Jules. Jules is analyzing the repo and running tests in its cloud VM. You can continue working; I will check back, or you can run `/jules check <ISSUE_NUMBER>` anytime."
    - If in an environment that supports one-shot reminders, schedule a check after 5 minutes rather than looping.
 
