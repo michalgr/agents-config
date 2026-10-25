@@ -5,7 +5,7 @@
   * Human reviewers typically spend most of their cognitive energy auditing production code and are mentally drained by the time they reach test files—often skimming or ignoring tests if CI is green.
   * Left unchecked, this blind spot turns the test suite into a dumping ground of technical debt. As an agent, you must hold test code to the **exact same architectural and readability standards** as production code.
 * **All Code Structure & Documentation Rules Apply to Tests:**
-  * Test files and test helpers must follow all rules in `code-structure.md` and `documentation.md`: decompose test logic into high-level **theorems** (test cases) and **pure lemmas** (setup/assertion helpers $\le 25$ lines of logic; declarative table-driven test data arrays may exceed 25 lines when cohesive), organize code in `Definitions → Lemmas → Theorems` order (while keeping `Definitions → Theorems → Lemmas` in the test module's top-of-file outline), use narrow types, and enforce the **400 / 800 / 1,200-line** module size thresholds.
+  * Test files and test helpers must follow all rules in `code-structure.md` and `documentation.md`: decompose test logic into high-level **test cases** (entry points) and **pure test helpers** (setup/assertion helpers $\le 25$ lines of logic; declarative table-driven test data arrays may exceed 25 lines when cohesive), organize code in `Definitions → Helpers → Test Cases` order (while keeping `Definitions → Test Cases → Helpers` in the test module's top-of-file outline), use narrow types, and enforce the **400 / 800 / 1,200-line** module size thresholds.
 
 ## 2. Documented Testing Strategy
 * **Establish & Document a Testing Strategy per Component:**
@@ -22,7 +22,7 @@
 * **Tests as Concise "Worked Examples" of Invariants:**
   * Structure each test so a human reader can immediately see **what invariant is being established** without wading through noise.
   * Only specify the inputs and state fields that are causally relevant to the invariant under test; hide irrelevant boilerplate behind sensible defaults or shared builders.
-  * Use table-driven tests and descriptive test lemmas so each case reads like a self-contained proof of a specific boundary condition or invariant.
+  * Use table-driven tests and descriptive test helpers so each case reads like a self-contained verification of a specific boundary condition or invariant.
 
 ## 4. Shared Test Infrastructure as High-Priority Architecture
 * **No Ad-Hoc, Throwaway Test Plumbing:**

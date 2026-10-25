@@ -10,30 +10,29 @@
   * Explicit repository-local conventions (`AGENTS.md`, `CONTRIBUTING.md`) take precedence over these global defaults when they conflict.
   * Apply structural and module-size refactoring to code within the scope of your task—do not perform unrelated mass-refactoring of untouched legacy files during a targeted bug fix.
 
-## 2. Code Structure: Theorems, Lemmas, Types, and Modules
-* **Functions as Theorems and Lemmas:**
-  * Think of high-level functions as **theorems** that are broken down into **lemmas** (helper functions) which clearly communicate their meaning via descriptive names and clear signatures.
-  * A theorem should read like a high-level proof outline composed of lemmas, allowing a human to verify the high-level logic before inspecting individual lemma implementations.
-* **Pure Lemmas & Explicit Side Effects:**
-  * Keep lemmas **pure** (deterministic data transformations and checks) whenever possible.
-  * Push I/O and state mutations up to the orchestrating **theorem** layer—or make mutation unmistakable in a lemma's name and signature—so a reviewer can understand all side effects by reading the top-level theorem alone.
-* **Proof by Type & Assertion (Types as Documentation):**
-  * In mathematics, theorems explicitly state their hypotheses and conclusions. In code, encode preconditions, postconditions, and invariants using **narrow, expressive types** wherever possible.
+## 2. Code Structure: Orchestrators, Helpers, Types, and Modules
+* **Entry Points (Orchestrators) and Helpers:**
+  * Decompose high-level **entry points** (or **orchestrators**) into small, single-purpose **helper functions** that clearly communicate their meaning via descriptive names and precise signatures.
+  * An entry point should read like a high-level workflow outline composed of helpers, allowing a human to verify the overall logic before inspecting individual helper implementations.
+* **Pure Helpers & Explicit Side Effects (Functional Core, Imperative Shell):**
+  * Keep helpers **pure** (deterministic data transformations, calculations, and validations) whenever possible.
+  * Push I/O and state mutations up to the top-level **orchestrator** layer—or make mutation unmistakable in a helper's name and signature—so a reviewer can understand all side effects by reading the entry point alone.
+* **Narrow Types & Boundary Assertions (Types as Documentation):**
+  * Encode preconditions, postconditions, and domain invariants using **narrow, expressive types** wherever possible so invalid states are unrepresentable.
   * Prefer specific domain types, structs/dataclasses, enums, and descriptive type aliases over raw primitives (`str`, `int`, untyped `dict`/tuples) so that signatures serve as machine-checked documentation.
   * Where the type system cannot express an invariant, enforce it explicitly at function boundaries with guard clauses or assertions so human reviewers do not have to trace callers to verify assumptions.
 * **Function Size ($\le 25$ lines) & Logical Cohesion:**
-  * Keep functions (both theorems and lemmas) up to **25 lines of code** (excluding docstrings and comments).
-  * **Cohesion comes first:** Lemmas must make logical sense as self-contained conceptual steps—do not slice code arbitrarily just to satisfy a line count. It is fine to occasionally exceed 25 lines when splitting would harm clarity, such as in long `match`/`switch` statements or exhaustive pattern matching.
-* **Code Order (`Definitions → Lemmas → Theorems`):**
-  * Organize code within a module so that helper building blocks precede the entry points that use them, while keeping the top-down conceptual reasoning (`Definitions → Theorems → Lemmas`) in the module's top-of-file **outline** comment (when the module is complex enough to warrant one):
+  * Keep functions (both entry points and helpers) up to **25 lines of code** (excluding docstrings and comments).
+  * **Cohesion comes first:** Each helper must represent a coherent, self-contained conceptual step—do not slice code arbitrarily just to satisfy a line count. It is fine to occasionally exceed 25 lines when splitting would harm clarity, such as in long `match`/`switch` statements or exhaustive pattern matching.
+* **Bottom-Up Code Order (`Definitions → Helpers → Entry Points`):**
+  * Organize code within a module so that helper building blocks precede the entry points that use them, while keeping the top-down conceptual reasoning (`Definitions → Entry Points → Helpers`) in the module's top-of-file **outline** comment (when the module is complex enough to warrant one):
     1. **Definitions:** Core types, data structures, and constants (establishing the vocabulary and invariants first).
-    2. **Lemmas (Helpers):** Helper functions ordered to build up toward the entry points they support.
-    3. **Theorems (Entry Points / Public API):** Main public functions and high-level orchestrators that compose the helpers above.
-  * **Mental Model Only (No Rule/Math Jargon in Code/Docs):** "Theorems", "lemmas", and "module outline" are mental models for structuring code—never emit math terminology (`Theorem`, `Lemma`, `Proof`, `Corollary`) or artificial rule labels (`Master Plan`, `Module Outline`) in code comments, section headers, identifiers, docstrings, or documentation. Write natural prose comments or use standard engineering terms (e.g., `Overview`, `Definitions`, `Helper Functions`, `Entry Points` / `Public API`).
+    2. **Helpers:** Internal helper functions ordered to build up toward the entry points they support.
+    3. **Entry Points (Public API / Orchestrators):** Main public functions and high-level orchestrators that compose the helpers above.
 * **Multi-Module Organization & Size Thresholds:**
   * Do not hesitate to group functions and classes across multiple cohesive modules ("chapters")—avoid single source files that grow into thousands of lines.
   * Treat **400, 800, and 1,200 lines** as escalating levels of "this module is getting too big":
-    * **~400 lines (Checkpoint):** Pause and evaluate whether distinct sub-problems, secondary types, or lemma families should be extracted into their own module.
+    * **~400 lines (Checkpoint):** Pause and evaluate whether distinct sub-problems, secondary types, or helper groups should be extracted into their own module.
     * **~800 lines (Warning — Too Big):** Actively split the file into multiple focused modules unless there is a strong, explicit reason why the code cannot be separated.
     * **~1,200 lines (Critical Ceiling):** Unacceptable monolith. Must be decomposed into smaller modules immediately.
   * **Subsystem Table of Contents:** When a feature or subsystem spans multiple modules, include a **Table of Contents** comment in the package entry point (`__init__.py`, `mod.rs`, `index.ts`, or primary coordinator module) explaining the role of each module and the recommended reading order.

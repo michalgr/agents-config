@@ -8,7 +8,7 @@ If your agent harness does not automatically inline the `@[...]` rule includes b
 ### 1. Git Commit Policy (interactive local sessions)
 @[Git Commit Policy](./rules/git-commit-policy.md)
 
-### 2. Code Design & Structure Guidelines (philosophy, Theorems & Lemmas, narrow types, module size limits, language standards)
+### 2. Code Design & Structure Guidelines (philosophy, orchestrators & pure helpers, narrow types, module size limits, language standards)
 @[Code Design & Structure Guidelines](./rules/code-structure.md)
 
 ### 3. Testing Guidelines (tests as first-class code, documented testing strategy, testing invariants over implementation, shared test infra)
