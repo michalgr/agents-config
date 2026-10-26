@@ -2,7 +2,7 @@
 
 ## 1. In-Code Commentary & Human-Review Scaffolding
 * **Three Levels of Commentary:**
-  * Provide **module comments**, **class comments**, and **function comments**.
+  * Consider commentary across three granularities: **module comments**, **class/type comments**, and **function comments** (applied where non-trivial rather than restating syntax).
 * **Separation of Docstrings and Implementation Comments:**
   * **Docstrings** document the *abstraction*: its purpose and how to use it (if not trivial).
   * **Non-docstring comments** (`#`, `//`, `/* */`) document *implementation details*, architectural context, and verification notes that help human readers quickly understand and audit the code.
@@ -13,6 +13,7 @@
     * **Python:** Place top-of-file implementation outlines *after* the module docstring (`"""..."""`) so linters and doc generators correctly resolve the module docstring.
     * **Go:** Separate top-of-file non-docstring outlines from the `package` statement with a blank line so `godoc` does not mistake them for package documentation.
     * **Rust:** Use standard `//` line comments for implementation scaffolding rather than `///` or `//!`, avoiding broken doc attachment.
+    * **TypeScript / JavaScript / C++ / Java:** Use standard `//` or `/* ... */` comments (not `/** ... */` JSDoc/TSDoc/Javadoc blocks) for implementation scaffolding and outlines, preventing doc generators from attaching internal outlines to subsequent public declarations.
   * **No Artificial Rule Labels or Section Banners:** While these guidelines use "Module Outline" to describe the top-of-file architectural comment, **never** emit artificial rule labels (`Module Outline`, `Master Plan`) or robotic category banners (`# Definitions`, `# Helpers`, `# Entry Points`) as literal headers in code comments, docstrings, commit messages, or `docs/*.md`. Write natural prose. In small or self-contained modules, omit section headers entirely; in large modules where grouping aids readability, use natural, domain-specific headers (e.g., `# Configuration & Defaults`, `# Validation Helpers`, `# Public Interface`).
   * **Keep the Module Outline in Sync (Anti-Drift):** Treat the top-of-file module outline and contextualizing comments as first-class code. Whenever you add, remove, or refactor functions or classes in an existing module, update the commentary as part of the change so it never becomes stale.
 * **Non-Trivial Details & Avoided Edge Cases:**
@@ -24,7 +25,7 @@
   * While a **Module Outline** explains the internals of a *single* file, substantial knowledge that spans multiple modules, describes system-wide behavior, or would bloat source files belongs in topic-focused Markdown files under `docs/` (e.g., `docs/architecture.md`, `docs/<subsystem>.md`, `docs/<protocol>.md`).
   * Do not let valuable architectural context vanish in chat history or PR descriptions—persist it in `docs/*.md`. Conversely, do not create boilerplate `docs/*.md` files for routine localized bug fixes or minor changes.
 * **What Belongs in `docs/*.md`:**
-  * **System & Data-Flow Diagrams:** Visualize cross-module component interactions, state machines, and request/data pipelines using **Mermaid diagrams** (`flowchart`, `sequenceDiagram`, `stateDiagram-v2`, `classDiagram`) and concise tables.
+  * **System & Data-Flow Diagrams:** Visualize cross-module component interactions, state machines, and request/data pipelines using **Mermaid diagrams** (`flowchart`, `sequenceDiagram`, `stateDiagram-v2`, `classDiagram`) and concise tables. Always quote node labels containing special characters like parentheses, brackets, or colons (e.g., `id["Label (info)"]`) to prevent parse errors.
   * **Key Decisions & Trade-Offs (Design Rationale):** Document *why* a design, algorithm, or dependency was chosen, **which alternatives were considered and rejected**, and the constraints or invariants behind the decision. This prevents future reviewers and agents from re-litigating or accidentally breaking deliberate trade-offs.
   * **External Protocols, Schemas & Domain Contracts:** Document third-party APIs, wire formats, configuration matrices, and domain rules that the codebase integrates with.
   * **Learning Materials & External Sources:** Link to relevant external references—such as official specifications, RFCs, papers, upstream documentation, or technical articles—that provide domain background or explain the concepts/algorithms used.
