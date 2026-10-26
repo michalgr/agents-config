@@ -6,6 +6,8 @@
   * Left unchecked, this blind spot turns the test suite into a dumping ground of technical debt. As an agent, you must hold test code to the **exact same architectural and readability standards** as production code.
 * **All Code Structure & Documentation Rules Apply to Tests:**
   * Test files and test helpers must follow all rules in `code-structure.md` and `documentation.md`: decompose test logic into high-level **test cases** (entry points) and **pure test helpers** (setup/assertion helpers $\le 25$ lines of logic; declarative table-driven test data arrays may exceed 25 lines when cohesive), organize code in `Definitions → Helpers → Test Cases` order (documenting non-trivial testing strategies in the top-of-file outline per Section 2, rather than listing test case names), use narrow types, and enforce the **400 / 800 / 1,200-line** module size thresholds.
+* **Mandatory Local Verification:**
+  * Never consider code or test changes complete without running the relevant test suite, typechecker, and linter to verify they pass cleanly. When writing a regression test for a bug, verify that it exercises the targeted defect rather than asserting a tautology.
 
 ## 2. Documented Testing Strategy
 * **Establish & Document a Testing Strategy per Component:**
@@ -19,6 +21,7 @@
 ## 3. Test Invariants & Contracts, Not Implementation (No Status-Quo Lock-In)
 * **Avoid Overspecification ("Change-Detector" Tests):**
   * Never write tests that lock in incidental implementation details—such as internal helper call sequences, private data structures, arbitrary ordering, or brittle mock interaction counts.
+  * **Functional Core vs. Incidental Helpers:** Pure domain calculations, parsers, and state transitions (the *Functional Core*) represent stable contracts and should be tested directly with table-driven unit tests. Conversely, incidental plumbing helpers (functions split out merely to decompose local routines) should not be tested directly; exercise them through public entry points.
   * **The Refactoring Litmus Test:** Ask yourself: *"If we completely rewrote this component's internal algorithm or data structures while preserving its public contract, would these tests still pass unmodified?"* If not, the test is overspecified and must be redesigned around public contracts and observable behavior.
 * **Tests as Concise "Worked Examples" of Invariants:**
   * Structure each test so a human reader can immediately see **what invariant is being established** without wading through noise.
