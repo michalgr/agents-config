@@ -12,7 +12,7 @@ agents-config/
 ├── README.md
 ├── AGENTS.md                      # Global agent rules entry point (Table of Contents)
 ├── rules/                         # Modular domain-specific rule files
-│   ├── git-commit-policy.md       # Interactive Git commit approval policy (local harnesses)
+│   ├── git-commit-policy.md       # Interactive Git safety & commit approval policy (local harnesses)
 │   ├── code-structure.md          # Philosophy, orchestrators & helpers, types, module size limits
 │   ├── testing.md                 # First-class test code, strategy, invariants, shared test infra
 │   └── documentation.md           # In-code commentary, Module Outline, and docs/*.md rules
