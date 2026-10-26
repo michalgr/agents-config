@@ -27,8 +27,8 @@
 * **Bottom-Up Code Order (`Definitions → Helpers → Entry Points`):**
   * Organize code within a module so that helper building blocks precede the entry points that use them, while keeping the top-down conceptual reasoning (`Definitions → Entry Points → Helpers`) in the module's top-of-file **outline** comment (when the module is complex enough to warrant one):
     1. **Definitions:** Core data types, schemas, interfaces, and constants (establishing the domain vocabulary and invariants first; not stateful orchestrator classes).
-    2. **Helpers:** Internal helper functions ordered to build up toward the entry points they support. Prefer free pure functions before orchestrator classes; within classes or `impl` blocks, order private helper methods before the public methods that invoke them (or after constructors/initializers where language idioms require).
-    3. **Entry Points (Public API / Orchestrators):** Main public functions, orchestrator classes, and high-level workflows that compose the helpers above.
+    2. **Helpers:** Internal helper functions ordered to build up toward the entry points they support (leaf helpers before composite helpers). Prefer free pure functions before orchestrator classes.
+    3. **Entry Points (Public API / Orchestrators):** Main public functions, orchestrator classes, and high-level workflows that compose the helpers above. Within classes or `impl` blocks, order constructors and public API methods before private helper methods (or follow language/linter idioms) so the class's public contract is immediately visible.
 * **Multi-Module Organization & Size Thresholds:**
   * Do not hesitate to group functions and classes across multiple cohesive modules ("chapters")—avoid single source files that grow into thousands of lines.
   * Treat **400, 800, and 1,200 lines** as escalating levels of "this module is getting too big":
