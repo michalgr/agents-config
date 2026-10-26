@@ -16,19 +16,19 @@
   * An entry point should read like a high-level workflow outline composed of helpers, allowing a human to verify the overall logic before inspecting individual helper implementations.
 * **Pure Helpers & Explicit Side Effects (Functional Core, Imperative Shell):**
   * Keep helpers **pure** (deterministic data transformations, calculations, and validations) whenever possible.
-  * Push I/O and state mutations up to the top-level **orchestrator** layer—or make mutation unmistakable in a helper's name and signature—so a reviewer can understand all side effects by reading the entry point alone.
+  * Push I/O, state mutations, and ambient non-deterministic inputs (current time/clock, RNG, environment variables) up to the top-level **orchestrator** layer—orchestrators should resolve them and pass them as explicit arguments into pure helpers, making helpers deterministic and trivial to test without monkeypatching or mocks.
 * **Narrow Types & Boundary Assertions (Types as Documentation):**
   * Encode preconditions, postconditions, and domain invariants using **narrow, expressive types** wherever possible so invalid states are unrepresentable.
   * Prefer specific domain types, structs/dataclasses, enums, and descriptive type aliases over raw primitives (`str`, `int`, untyped `dict`/tuples) so that signatures serve as machine-checked documentation.
-  * Where the type system cannot express an invariant, enforce it explicitly at function boundaries with guard clauses or assertions so human reviewers do not have to trace callers to verify assumptions.
+  * **Parse at boundaries, assert internally:** At system/I/O boundaries, parse untrusted inputs into narrow domain types returning explicit errors/`Result`. Within internal code, use guard clauses or assertions for programmer invariants so human reviewers do not have to trace callers to verify assumptions, avoiding redundant re-checks of preconditions already guaranteed by the type system.
 * **Function Size ($\le 25$ lines) & Logical Cohesion:**
   * Keep functions (both entry points and helpers) up to **25 lines of code** (excluding docstrings and comments).
-  * **Cohesion comes first:** Each helper must represent a coherent, self-contained conceptual step—do not slice code arbitrarily just to satisfy a line count. It is fine to occasionally exceed 25 lines when splitting would harm clarity, such as in long `match`/`switch` statements or exhaustive pattern matching.
+  * **Cohesion comes first:** Each helper must represent a coherent, self-contained conceptual step—do not slice code arbitrarily just to satisfy a line count. Never fragment a cohesive routine into artificial sequential pieces (`_part1`/`_part2`) that require threading many local variables as parameters or returning ad-hoc tuples. It is fine to occasionally exceed 25 lines when splitting would harm clarity, such as in long `match`/`switch` statements, exhaustive pattern matching, multiline declarative data/config literals, or fluent builders.
 * **Bottom-Up Code Order (`Definitions → Helpers → Entry Points`):**
   * Organize code within a module so that helper building blocks precede the entry points that use them, while keeping the top-down conceptual reasoning (`Definitions → Entry Points → Helpers`) in the module's top-of-file **outline** comment (when the module is complex enough to warrant one):
-    1. **Definitions:** Core types, data structures, and constants (establishing the vocabulary and invariants first).
-    2. **Helpers:** Internal helper functions ordered to build up toward the entry points they support.
-    3. **Entry Points (Public API / Orchestrators):** Main public functions and high-level orchestrators that compose the helpers above.
+    1. **Definitions:** Core data types, schemas, interfaces, and constants (establishing the domain vocabulary and invariants first; not stateful orchestrator classes).
+    2. **Helpers:** Internal helper functions ordered to build up toward the entry points they support. Prefer free pure functions before orchestrator classes; within classes or `impl` blocks, order private helper methods before the public methods that invoke them (or after constructors/initializers where language idioms require).
+    3. **Entry Points (Public API / Orchestrators):** Main public functions, orchestrator classes, and high-level workflows that compose the helpers above.
 * **Multi-Module Organization & Size Thresholds:**
   * Do not hesitate to group functions and classes across multiple cohesive modules ("chapters")—avoid single source files that grow into thousands of lines.
   * Treat **400, 800, and 1,200 lines** as escalating levels of "this module is getting too big":
