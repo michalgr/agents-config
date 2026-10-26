@@ -10,6 +10,7 @@
 * Wait for the user to explicitly approve or accept the commit before running it.
 
 ## 2. Working Tree Safety & Remote Mutations
-* **No autonomous destructive commands.** Never run commands that discard uncommitted working-tree changes or untracked files (`git reset --hard`, `git restore`, `git checkout -- <file>`, `git clean`) without explicit user instruction.
+* **No autonomous destructive or state-hiding commands.** Never run commands that discard uncommitted working-tree changes, stash modifications, or force-delete local branches (`git reset --hard`, `git restore`, `git checkout -- <file>`, `git clean`, `git stash`, `git branch -D`, `git checkout -B`) without explicit user instruction.
 * **No autonomous remote or history mutations.** Never run commands that publish or rewrite repository history (`git push`, `git rebase`, `git commit --amend`, `gh pr merge`) without explicit user approval.
-* **Selective staging over blind adds:** Stage specific modified files by path (`git add <file>`) rather than blind bulk staging (`git add -A`, `git add .`), preventing accidental staging of untracked scratch files, local secrets, or temporary artifacts.
+* **Non-interactive execution only:** Never invoke commands that require an interactive TTY or editor (`git add -i`, `git add -p`, `git rebase -i`, or `git commit` without `-m`/`-F`).
+* **Selective staging over blind adds:** Stage specific modified files by path (`git add <file>`) rather than blind bulk staging (`git add -A`, `git add .`), preventing accidental staging of untracked scratch files, local secrets, or temporary artifacts. Do not modify the staging area (`git add`) until the user approves the commit, preserving any pre-staged hunks the user prepared.
